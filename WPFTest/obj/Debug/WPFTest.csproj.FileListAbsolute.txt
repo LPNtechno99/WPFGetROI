@@ -1,0 +1,15 @@
+D:\Csharp\WPFTest\WPFTest\bin\Debug\WPFTest.exe.config
+D:\Csharp\WPFTest\WPFTest\bin\Debug\WPFTest.exe
+D:\Csharp\WPFTest\WPFTest\bin\Debug\WPFTest.pdb
+D:\Csharp\WPFTest\WPFTest\obj\Debug\MainWindow.g.cs
+D:\Csharp\WPFTest\WPFTest\obj\Debug\App.g.cs
+D:\Csharp\WPFTest\WPFTest\obj\Debug\GeneratedInternalTypeHelper.g.cs
+D:\Csharp\WPFTest\WPFTest\obj\Debug\WPFTest_MarkupCompile.cache
+D:\Csharp\WPFTest\WPFTest\obj\Debug\WPFTest_MarkupCompile.lref
+D:\Csharp\WPFTest\WPFTest\obj\Debug\MainWindow.baml
+D:\Csharp\WPFTest\WPFTest\obj\Debug\WPFTest.g.resources
+D:\Csharp\WPFTest\WPFTest\obj\Debug\WPFTest.Properties.Resources.resources
+D:\Csharp\WPFTest\WPFTest\obj\Debug\WPFTest.csproj.GenerateResource.cache
+D:\Csharp\WPFTest\WPFTest\obj\Debug\WPFTest.csproj.CoreCompileInputs.cache
+D:\Csharp\WPFTest\WPFTest\obj\Debug\WPFTest.exe
+D:\Csharp\WPFTest\WPFTest\obj\Debug\WPFTest.pdb
