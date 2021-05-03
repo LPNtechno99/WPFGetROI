@@ -12,18 +12,30 @@ namespace WPFTest
         private Point _dragStart;
         private Point _dragStartOffset;
         private Rect _dragRect;
-        private AnchorPoint _dragAnchor;
+        private AnchorPoint _dragAnchor = AnchorPoint.None;
         private Rect _rect;
+        private Rect _rectTransform;
+        private Point _centerPoint;
         private Point _offsetRect;
         private Single _rectRotation;
+
         //private Single _dragRot;
 
         public ImageEx()
         {
-            _rect = new Rect(new Point(50, 50), new Size(100, 50));
+            _rect = new Rect(new Point(50, 50), new Size(80, 60));
+            _rectTransform = _rect;
             _offsetRect = new Point(0, 0);
             _rectRotation = 0;
+            _centerPoint = new Point(_rect.Left + _rect.Width / 2, _rect.Top + _rect.Height / 2);
         }
+
+        public Point CenterPoint
+        {
+            get { return _centerPoint; }
+            set { _centerPoint = value; }
+        }
+
         public bool Drag
         {
             get { return _drag; }
@@ -32,7 +44,7 @@ namespace WPFTest
 
         public Size DragSize
         {
-            get { return _dragSize;}
+            get { return _dragSize; }
             set { _dragSize = value; }
         }
         public Point DragStart
@@ -60,6 +72,11 @@ namespace WPFTest
             get { return _rect; }
             set { _rect = value; }
         }
+        public Rect RectTransform
+        {
+            get { return _rectTransform; }
+            set { _rectTransform = value; }
+        }
         public Point OffsetRect
         {
             get { return _offsetRect; }
@@ -73,23 +90,30 @@ namespace WPFTest
         protected override void OnRender(DrawingContext dc)
         {
             base.OnRender(dc);
-            if(ZoomBorder.GetROI)
+            if (ZoomBorder.GetROI)
             {
-                // Move Graphics handler to Rectangle's space
+                string puttext = "Angle: " + _rectRotation + "\n" + "Offset X: " + _offsetRect.X
+                    + " , " + "Offset Y: " + _offsetRect.Y + "\n"
+                    + "Width: " + _rect.Width
+                    + " , " + "Height: " + _rect.Height;
+                FormattedText formattedText = new FormattedText(puttext, new System.Globalization.CultureInfo(10),
+                FlowDirection.LeftToRight, new Typeface("Angle Degree"), 12, Brushes.DarkRed, 3.25);
+                dc.DrawText(formattedText, new Point(10, 10));
+
                 var mat = new Matrix();
+                mat.RotateAt(_rectRotation, _centerPoint.X, _centerPoint.Y);
                 mat.Translate(_offsetRect.X, _offsetRect.Y);
-                mat.Rotate(_rectRotation);
 
                 MatrixTransform matrixTransform = new MatrixTransform(mat);
                 dc.PushTransform(matrixTransform);
+
+                dc.PushOpacity(0.6);
 
                 // All out gizmo rectangles are defined in Rectangle Space
                 var rectTopLeft = new Rect(_rect.Left - 5f, _rect.Top - 5f, 10f, 10f);
                 var rectTopRight = new Rect(_rect.Left + _rect.Width - 5f, _rect.Top - 5f, 10f, 10f);
                 var rectBottomLeft = new Rect(_rect.Left - 5f, _rect.Top + _rect.Height - 5f, 10f, 10f);
                 var rectBottomRight = new Rect(_rect.Left + _rect.Width - 5f, _rect.Top + _rect.Height - 5f, 10f, 10f);
-
-                var rectRotate = new Rect(_rect.Left + _rect.Width / 2, _rect.Top - 20f, 10f, 10f);
                 var rectCenter = new Rect(_rect.Left + _rect.Width / 2 - 5f, _rect.Top + _rect.Height / 2 - 5f, 10f, 10f);
 
                 //3 point draw line and ellipse
@@ -97,19 +121,30 @@ namespace WPFTest
                 Point pointLine2 = new Point(_rect.Left + _rect.Width / 2, _rect.Top - 30);
                 Point pointCenterEllipse = new Point(_rect.Left + _rect.Width / 2, _rect.Top - 30);
 
-                dc.DrawRectangle(null, new Pen(Brushes.Black, 2), _rect);
-                dc.DrawRectangle(null, new Pen(Brushes.Blue, 2), rectTopLeft);
-                dc.DrawRectangle(null, new Pen(Brushes.Blue, 2), rectTopRight);
-                dc.DrawRectangle(null, new Pen(Brushes.Blue, 2), rectBottomLeft);
-                dc.DrawRectangle(null, new Pen(Brushes.Blue, 2), rectBottomRight);
-                //dc.DrawRectangle(null, new Pen(Brushes.Blue, 2), rectRotate);
+                dc.DrawRectangle(Brushes.White, new Pen(Brushes.Black, 1.5), _rect);
+                dc.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Blue, 1), rectTopLeft);
+                dc.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Blue, 1), rectTopRight);
+                dc.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Blue, 1), rectBottomLeft);
+                dc.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Blue, 1), rectBottomRight);
+                dc.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Black, 1), rectCenter);
 
-                dc.DrawLine(new Pen(Brushes.Black, 2), pointLine1, pointLine2);
-                dc.DrawEllipse(Brushes.Blue, new Pen(Brushes.Black, 2), pointCenterEllipse, 7d, 7d);
+                dc.DrawLine(new Pen(Brushes.Red, 1), new Point(_centerPoint.X - 15d,
+                    _centerPoint.Y), new Point(_centerPoint.X + 15d, _centerPoint.Y));
+                dc.DrawLine(new Pen(Brushes.Red, 1), new Point(_centerPoint.X,
+                    _centerPoint.Y - 15d), new Point(_centerPoint.X, _centerPoint.Y + 15d));
+                dc.DrawEllipse(Brushes.Red, null, _centerPoint, 2d, 2d);
 
-                dc.DrawRectangle(null, new Pen(Brushes.Blue, 2), rectCenter);
-                
+                //draw line rotate
+                dc.DrawLine(new Pen(Brushes.Black, 1.5), pointLine1, pointLine2);
+
+                //draw ellipse rotate
+                dc.DrawEllipse(Brushes.Blue, new Pen(Brushes.Black, 1.5), pointCenterEllipse, 7d, 7d);
+
+                //calculate center point
+                _centerPoint = new Point(_rect.Left + _rect.Width / 2, _rect.Top + _rect.Height / 2);
+
                 dc.Pop();
+
             }
         }
     }

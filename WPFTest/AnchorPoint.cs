@@ -8,6 +8,7 @@ namespace WPFTest
 {
     public enum AnchorPoint
     {
+        None,
         TopLeft,
         TopRight,
         BottomLeft,

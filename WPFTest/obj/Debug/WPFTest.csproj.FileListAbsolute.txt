@@ -13,3 +13,4 @@ D:\Csharp\WPFTest\WPFTest\obj\Debug\WPFTest.csproj.GenerateResource.cache
 D:\Csharp\WPFTest\WPFTest\obj\Debug\WPFTest.csproj.CoreCompileInputs.cache
 D:\Csharp\WPFTest\WPFTest\obj\Debug\WPFTest.exe
 D:\Csharp\WPFTest\WPFTest\obj\Debug\WPFTest.pdb
+D:\Csharp\WPFTest\WPFTest\obj\Debug\WPFTest.csprojAssemblyReference.cache

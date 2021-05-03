@@ -7,11 +7,11 @@ namespace WPFTest
     {
         public static Point TransformPoint(this Matrix @this, Point point)
         {
-            var points = new[] { point };
+            //var points = new[] { point };
 
-            @this.Transform(points);
+            @this.Transform(point);
 
-            return points[0];
+            return point;
         }
     }
 }

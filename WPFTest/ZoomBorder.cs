@@ -89,10 +89,11 @@ namespace WPFTest
                 return;
 
             var mat = new Matrix();
+            mat.RotateAt(imageEx.RectRotation, imageEx.CenterPoint.X, imageEx.CenterPoint.Y);
             mat.Translate(imageEx.OffsetRect.X, imageEx.OffsetRect.Y);
-            mat.Rotate(imageEx.RectRotation);
             mat.Invert();
-            var point = mat.TransformPoint(new Point(e.GetPosition(imageEx).X, e.GetPosition(imageEx).Y));
+
+            var point = mat.Transform(new Point(e.GetPosition(imageEx).X, e.GetPosition(imageEx).Y));
 
             Point offsetSize;
             Point clamped;
@@ -101,48 +102,59 @@ namespace WPFTest
             {
                 case AnchorPoint.TopLeft:
 
-                    clamped = new Point(Math.Max(0, point.X), Math.Max(0, point.Y));
+                    clamped = new Point(Math.Min(imageEx.Rect.BottomRight.X - 5d, point.X),
+                        Math.Min(imageEx.Rect.BottomRight.Y - 5d, point.Y));
                     offsetSize = new Point(clamped.X - imageEx.DragStart.X, clamped.Y - imageEx.DragStart.Y);
                     imageEx.Rect = new Rect(
                         imageEx.DragRect.Left + offsetSize.X,
                         imageEx.DragRect.Top + offsetSize.Y,
                         imageEx.DragRect.Width - offsetSize.X,
                         imageEx.DragRect.Height - offsetSize.Y);
+
                     break;
 
                 case AnchorPoint.TopRight:
-                    clamped = new Point(Math.Max(0, point.X), Math.Max(0, point.Y));
+                    clamped = new Point(Math.Max(imageEx.Rect.BottomLeft.X - 5d, point.X),
+                        Math.Min(imageEx.Rect.BottomLeft.Y - 5d, point.Y));
                     offsetSize = new Point(clamped.X - imageEx.DragStart.X, clamped.Y - imageEx.DragStart.Y);
                     imageEx.Rect = new Rect(
                         imageEx.DragRect.Left,
                         imageEx.DragRect.Top + offsetSize.Y,
                         imageEx.DragRect.Width + offsetSize.X,
                         imageEx.DragRect.Height - offsetSize.Y);
+
                     break;
 
                 case AnchorPoint.BottomLeft:
-                    clamped = new Point(Math.Max(0, point.X), Math.Max(0, point.Y));
+                    clamped = new Point(Math.Min(imageEx.Rect.TopRight.X + 5d, point.X),
+                        Math.Max(imageEx.Rect.TopRight.Y + 5d, point.Y));
                     offsetSize = new Point(clamped.X - imageEx.DragStart.X, clamped.Y - imageEx.DragStart.Y);
                     imageEx.Rect = new Rect(
                         imageEx.DragRect.Left + offsetSize.X,
                         imageEx.DragRect.Top,
                         imageEx.DragRect.Width - offsetSize.X,
                         imageEx.DragRect.Height + offsetSize.Y);
+
                     break;
 
                 case AnchorPoint.BottomRight:
-                    clamped = new Point(Math.Max(0, point.X), Math.Max(0, point.Y));
+                    clamped = new Point(Math.Max(imageEx.Rect.TopLeft.X + 5d, point.X),
+                        Math.Max(imageEx.Rect.TopLeft.Y + 5d, point.Y));
                     offsetSize = new Point(clamped.X - imageEx.DragStart.X, clamped.Y - imageEx.DragStart.Y);
                     imageEx.Rect = new Rect(
                         imageEx.DragRect.Left,
                         imageEx.DragRect.Top,
                         imageEx.DragRect.Width + offsetSize.X,
                         imageEx.DragRect.Height + offsetSize.Y);
+
                     break;
 
                 case AnchorPoint.Rotation:
-                    var vecX = point.X;
-                    var vecY = -point.Y;
+                    //var vecX = (point.X);
+                    //var vecY = (-point.Y);
+
+                    var vecX = (point.X - imageEx.CenterPoint.X);
+                    var vecY = (imageEx.CenterPoint.Y - point.Y);
 
                     var len = Math.Sqrt(vecX * vecX + vecY * vecY);
 
@@ -155,11 +167,13 @@ namespace WPFTest
                     var dotProduct = (0 * normX + 1 * normY);
                     var angle = Math.Acos(dotProduct);
 
-                    if (point.X < 0)
+                    if (vecX < 0)
                         angle = -angle;
 
                     // Add (delta-radians) to rotation as degrees
                     imageEx.RectRotation += (float)((180 / Math.PI) * angle);
+                    if (imageEx.RectRotation > 360 || imageEx.RectRotation < -360)
+                        imageEx.RectRotation = 0;
 
                     break;
 
@@ -167,6 +181,7 @@ namespace WPFTest
                     //move this in screen-space
                     imageEx.OffsetRect = new Point(e.GetPosition(imageEx).X - imageEx.DragStartOffset.X,
                         e.GetPosition(imageEx).Y - imageEx.DragStartOffset.Y);
+                    
                     break;
             }
 
@@ -188,12 +203,12 @@ namespace WPFTest
             // Compute a Screen to Rectangle transform 
 
             var mat = new Matrix();
+            mat.RotateAt(imageEx.RectRotation, imageEx.CenterPoint.X, imageEx.CenterPoint.Y);
             mat.Translate(imageEx.OffsetRect.X, imageEx.OffsetRect.Y);
-            mat.Rotate(imageEx.RectRotation);
             mat.Invert();
 
             // Mouse point in Rectangle's space. 
-            var point = mat.TransformPoint(new Point(e.GetPosition(imageEx).X, e.GetPosition(imageEx).Y));
+            var point = mat.Transform(new Point(e.GetPosition(imageEx).X, e.GetPosition(imageEx).Y));
 
             var rect = imageEx.Rect;
             var rectTopLeft = new Rect(imageEx.Rect.Left - 5f, imageEx.Rect.Top - 5f, 10f, 10f);
@@ -208,6 +223,7 @@ namespace WPFTest
                 //We're in Rectangle space now, so its simple box-point intersection test
                 if (rectTopLeft.Contains(point))
                 {
+
                     imageEx.Drag = true;
                     imageEx.DragStart = new Point(point.X, point.Y);
                     imageEx.DragAnchor = AnchorPoint.TopLeft;
@@ -215,6 +231,7 @@ namespace WPFTest
                 }
                 else if (rectTopRight.Contains(point))
                 {
+
                     imageEx.Drag = true;
                     imageEx.DragStart = new Point(point.X, point.Y);
                     imageEx.DragAnchor = AnchorPoint.TopRight;
@@ -222,6 +239,7 @@ namespace WPFTest
                 }
                 else if (rectBottomLeft.Contains(point))
                 {
+
                     imageEx.Drag = true;
                     imageEx.DragStart = new Point(point.X, point.Y);
                     imageEx.DragAnchor = AnchorPoint.BottomLeft;
@@ -229,6 +247,7 @@ namespace WPFTest
                 }
                 else if (rectBottomRight.Contains(point))
                 {
+
                     imageEx.Drag = true;
                     imageEx.DragStart = new Point(point.X, point.Y);
                     imageEx.DragAnchor = AnchorPoint.BottomRight;
@@ -236,6 +255,7 @@ namespace WPFTest
                 }
                 else if (ellipse.FillContains(point))
                 {
+
                     imageEx.Drag = true;
                     imageEx.DragStart = new Point(point.X, point.Y);
                     imageEx.DragAnchor = AnchorPoint.Rotation;
@@ -244,7 +264,7 @@ namespace WPFTest
                 else if (rect.Contains(point))
                 {
                     imageEx.Drag = true;
-                    imageEx.DragStart = new Point(point.X, point.Y);
+                    //imageEx.DragStart = new Point(point.X, point.Y);
                     imageEx.DragAnchor = AnchorPoint.Center;
                     imageEx.DragRect = new Rect(imageEx.Rect.Left, imageEx.Rect.Top, imageEx.Rect.Width, imageEx.Rect.Height);
                     imageEx.DragStartOffset = new Point(e.GetPosition(imageEx).X - imageEx.OffsetRect.X, e.GetPosition(imageEx).Y - imageEx.OffsetRect.Y);
