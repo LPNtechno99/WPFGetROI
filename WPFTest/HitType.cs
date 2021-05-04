@@ -6,9 +6,11 @@ using System.Threading.Tasks;
 
 namespace WPFTest
 {
-    public enum AnchorPoint
+    public enum HitType
     {
         None,
+        Body,
+        Rotate,
         TopLeft,
         TopRight,
         BottomLeft,
@@ -16,8 +18,6 @@ namespace WPFTest
         MidTop,
         MidBottom,
         MidLeft,
-        MidRight,
-        Rotation,
-        Center
+        MidRight
     }
 }

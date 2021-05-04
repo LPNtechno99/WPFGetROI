@@ -85,6 +85,7 @@ namespace WPFTest
         {
             if (!_getROI)
                 return;
+            imageEx.SetHitType(e);
             if (!imageEx.Drag)
                 return;
 
@@ -126,7 +127,7 @@ namespace WPFTest
                     break;
 
                 case AnchorPoint.BottomLeft:
-                    clamped = new Point(Math.Min(imageEx.Rect.TopRight.X + 5d, point.X),
+                    clamped = new Point(Math.Min(imageEx.Rect.TopRight.X - 5d, point.X),
                         Math.Max(imageEx.Rect.TopRight.Y + 5d, point.Y));
                     offsetSize = new Point(clamped.X - imageEx.DragStart.X, clamped.Y - imageEx.DragStart.Y);
                     imageEx.Rect = new Rect(
@@ -147,6 +148,47 @@ namespace WPFTest
                         imageEx.DragRect.Width + offsetSize.X,
                         imageEx.DragRect.Height + offsetSize.Y);
 
+                    break;
+
+                case AnchorPoint.MidTop:
+                    clamped = new Point(Math.Min(imageEx.Rect.BottomRight.X - 5d, point.X),
+                        Math.Min(imageEx.Rect.BottomRight.Y - 5d, point.Y));
+                    offsetSize = new Point(clamped.X - imageEx.DragStart.X, clamped.Y - imageEx.DragStart.Y);
+                    imageEx.Rect = new Rect(
+                        imageEx.DragRect.Left,
+                        imageEx.DragRect.Top + offsetSize.Y,
+                        imageEx.DragRect.Width,
+                        imageEx.DragRect.Height - offsetSize.Y);
+                    break;
+                case AnchorPoint.MidBottom:
+                    clamped = new Point(Math.Min(imageEx.Rect.TopRight.X - 5d, point.X),
+                        Math.Max(imageEx.Rect.TopRight.Y + 5d, point.Y));
+                    offsetSize = new Point(clamped.X - imageEx.DragStart.X, clamped.Y - imageEx.DragStart.Y);
+                    imageEx.Rect = new Rect(
+                        imageEx.DragRect.Left,
+                        imageEx.DragRect.Top,
+                        imageEx.DragRect.Width,
+                        imageEx.DragRect.Height + offsetSize.Y);
+                    break;
+                case AnchorPoint.MidLeft:
+                    clamped = new Point(Math.Min(imageEx.Rect.TopRight.X - 5d, point.X),
+                        Math.Max(imageEx.Rect.TopRight.Y, point.Y));
+                    offsetSize = new Point(clamped.X - imageEx.DragStart.X, clamped.Y - imageEx.DragStart.Y);
+                    imageEx.Rect = new Rect(
+                        imageEx.DragRect.Left + offsetSize.X,
+                        imageEx.DragRect.Top,
+                        imageEx.DragRect.Width - offsetSize.X,
+                        imageEx.DragRect.Height);
+                    break;
+                case AnchorPoint.MidRight:
+                    clamped = new Point(Math.Max(imageEx.Rect.TopLeft.X + 5d, point.X),
+                        Math.Max(imageEx.Rect.TopLeft.Y, point.Y));
+                    offsetSize = new Point(clamped.X - imageEx.DragStart.X, clamped.Y - imageEx.DragStart.Y);
+                    imageEx.Rect = new Rect(
+                        imageEx.DragRect.Left,
+                        imageEx.DragRect.Top,
+                        imageEx.DragRect.Width + offsetSize.X,
+                        imageEx.DragRect.Height);
                     break;
 
                 case AnchorPoint.Rotation:
@@ -181,7 +223,7 @@ namespace WPFTest
                     //move this in screen-space
                     imageEx.OffsetRect = new Point(e.GetPosition(imageEx).X - imageEx.DragStartOffset.X,
                         e.GetPosition(imageEx).Y - imageEx.DragStartOffset.Y);
-                    
+
                     break;
             }
 
@@ -215,15 +257,17 @@ namespace WPFTest
             var rectTopRight = new Rect(imageEx.Rect.Left + imageEx.Rect.Width - 5f, imageEx.Rect.Top - 5f, 10f, 10f);
             var rectBottomLeft = new Rect(imageEx.Rect.Left - 5f, imageEx.Rect.Top + imageEx.Rect.Height - 5f, 10f, 10f);
             var rectBottomRight = new Rect(imageEx.Rect.Left + imageEx.Rect.Width - 5f, imageEx.Rect.Top + imageEx.Rect.Height - 5f, 10f, 10f);
-            //var rectRotate = new Rect(imageEx.Rect.Left + imageEx.Rect.Width / 2, imageEx.Rect.Top - 20f, 10f, 10f);
-            var ellipse = new EllipseGeometry(new Point(imageEx.Rect.Left + imageEx.Rect.Width / 2, imageEx.Rect.Top - 30), 7d, 7d);
+            var rectMidTop = new Rect(imageEx.Rect.Left + imageEx.Rect.Width / 2 - 5f, imageEx.Rect.Top - 5f, 10f, 10f);
+            var rectMidBottom = new Rect(imageEx.Rect.Left + imageEx.Rect.Width / 2 - 5f, imageEx.Rect.Top + imageEx.Rect.Height - 5f, 10f, 10f);
+            var rectMidLeft = new Rect(imageEx.Rect.Left - 5f, imageEx.Rect.Top + imageEx.Rect.Height / 2 - 5f, 10f, 10f);
+            var rectMidRight = new Rect(imageEx.Rect.Left + imageEx.Rect.Width - 5f, imageEx.Rect.Top + imageEx.Rect.Height / 2 - 5f, 10f, 10f);
+            var ellipse = new EllipseGeometry(new Point(imageEx.Rect.Left + imageEx.Rect.Width / 2, imageEx.Rect.Top - 30), 5d, 5d);
 
             if (!imageEx.Drag)
             {
                 //We're in Rectangle space now, so its simple box-point intersection test
                 if (rectTopLeft.Contains(point))
                 {
-
                     imageEx.Drag = true;
                     imageEx.DragStart = new Point(point.X, point.Y);
                     imageEx.DragAnchor = AnchorPoint.TopLeft;
@@ -247,10 +291,37 @@ namespace WPFTest
                 }
                 else if (rectBottomRight.Contains(point))
                 {
-
                     imageEx.Drag = true;
                     imageEx.DragStart = new Point(point.X, point.Y);
                     imageEx.DragAnchor = AnchorPoint.BottomRight;
+                    imageEx.DragRect = new Rect(imageEx.Rect.Left, imageEx.Rect.Top, imageEx.Rect.Width, imageEx.Rect.Height);
+                }
+                else if (rectMidTop.Contains(point))
+                {
+                    imageEx.Drag = true;
+                    imageEx.DragStart = new Point(point.X, point.Y);
+                    imageEx.DragAnchor = AnchorPoint.MidTop;
+                    imageEx.DragRect = new Rect(imageEx.Rect.Left, imageEx.Rect.Top, imageEx.Rect.Width, imageEx.Rect.Height);
+                }
+                else if (rectMidBottom.Contains(point))
+                {
+                    imageEx.Drag = true;
+                    imageEx.DragStart = new Point(point.X, point.Y);
+                    imageEx.DragAnchor = AnchorPoint.MidBottom;
+                    imageEx.DragRect = new Rect(imageEx.Rect.Left, imageEx.Rect.Top, imageEx.Rect.Width, imageEx.Rect.Height);
+                }
+                else if (rectMidLeft.Contains(point))
+                {
+                    imageEx.Drag = true;
+                    imageEx.DragStart = new Point(point.X, point.Y);
+                    imageEx.DragAnchor = AnchorPoint.MidLeft;
+                    imageEx.DragRect = new Rect(imageEx.Rect.Left, imageEx.Rect.Top, imageEx.Rect.Width, imageEx.Rect.Height);
+                }
+                else if (rectMidRight.Contains(point))
+                {
+                    imageEx.Drag = true;
+                    imageEx.DragStart = new Point(point.X, point.Y);
+                    imageEx.DragAnchor = AnchorPoint.MidRight;
                     imageEx.DragRect = new Rect(imageEx.Rect.Left, imageEx.Rect.Top, imageEx.Rect.Width, imageEx.Rect.Height);
                 }
                 else if (ellipse.FillContains(point))

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace WPFTest
@@ -19,11 +20,124 @@ namespace WPFTest
         private Point _offsetRect;
         private Single _rectRotation;
 
-        //private Single _dragRot;
+        HitType MouseHitType = HitType.None;
+        public void SetHitType(MouseEventArgs e)
+        {
+            // Compute a Screen to Rectangle transform 
 
+            var mat = new Matrix();
+            mat.RotateAt(_rectRotation, _centerPoint.X, _centerPoint.Y);
+            mat.Translate(_offsetRect.X, _offsetRect.Y);
+            mat.Invert();
+
+            // Mouse point in Rectangle's space. 
+            var point = mat.Transform(new Point(e.GetPosition(this).X, e.GetPosition(this).Y));
+
+            var rect = _rect;
+            var rectTopLeft = new Rect(_rect.Left - 5f, _rect.Top - 5f, 10f, 10f);
+            var rectTopRight = new Rect(_rect.Left + _rect.Width - 5f, _rect.Top - 5f, 10f, 10f);
+            var rectBottomLeft = new Rect(_rect.Left - 5f, _rect.Top + _rect.Height - 5f, 10f, 10f);
+            var rectBottomRight = new Rect(_rect.Left + _rect.Width - 5f, _rect.Top + _rect.Height - 5f, 10f, 10f);
+            var rectMidTop = new Rect(_rect.Left + _rect.Width / 2 - 5f, _rect.Top - 5f, 10f, 10f);
+            var rectMidBottom = new Rect(_rect.Left + _rect.Width / 2 - 5f, _rect.Top + _rect.Height - 5f, 10f, 10f);
+            var rectMidLeft = new Rect(_rect.Left - 5f, _rect.Top + _rect.Height / 2 - 5f, 10f, 10f);
+            var rectMidRight = new Rect(_rect.Left + _rect.Width - 5f, _rect.Top + _rect.Height / 2 - 5f, 10f, 10f);
+            var ellipse = new EllipseGeometry(new Point(_rect.Left + _rect.Width / 2, _rect.Top - 30), 5d, 5d);
+            if (rectTopLeft.Contains(point))
+            {
+                MouseHitType = HitType.TopLeft;
+                SetMouseCusor();
+            }
+            else if (rectTopRight.Contains(point))
+            {
+                MouseHitType = HitType.TopRight;
+                SetMouseCusor();
+            }
+            else if (rectBottomLeft.Contains(point))
+            {
+                MouseHitType = HitType.BottomLeft;
+                SetMouseCusor();
+            }
+            else if (rectBottomRight.Contains(point))
+            {
+                MouseHitType = HitType.BottomRight;
+                SetMouseCusor();
+            }
+            else if (rectMidTop.Contains(point))
+            {
+                MouseHitType = HitType.MidTop;
+                SetMouseCusor();
+            }
+            else if (rectMidBottom.Contains(point))
+            {
+                MouseHitType = HitType.MidBottom;
+                SetMouseCusor();
+            }
+            else if (rectMidLeft.Contains(point))
+            {
+                MouseHitType = HitType.MidLeft;
+                SetMouseCusor();
+            }
+            else if (rectMidRight.Contains(point))
+            {
+                MouseHitType = HitType.MidRight;
+                SetMouseCusor();
+            }
+            else if (ellipse.FillContains(point))
+            {
+                MouseHitType = HitType.Rotate;
+                SetMouseCusor();
+            }
+            else if (rect.Contains(point))
+            {
+                MouseHitType = HitType.Body;
+                SetMouseCusor();
+            }
+            else
+            {
+                MouseHitType = HitType.None;
+                SetMouseCusor();
+            }
+        }
+        public void SetMouseCusor()
+        {
+            Cursor desired_cursor = Cursors.Arrow;
+            switch (MouseHitType)
+            {
+                case HitType.None:
+                    desired_cursor = Cursors.Arrow;
+                    break;
+                case HitType.Body:
+                    desired_cursor = Cursors.SizeAll;
+                    break;
+                case HitType.Rotate:
+                    desired_cursor = Cursors.UpArrow;
+                    break;
+                case HitType.TopLeft:
+                case HitType.BottomRight:
+                    desired_cursor = Cursors.SizeNWSE;
+                    break;
+                case HitType.TopRight:
+                case HitType.BottomLeft:
+                    desired_cursor = Cursors.SizeNESW;
+                    break;
+                case HitType.MidTop:
+                case HitType.MidBottom:
+                    desired_cursor = Cursors.SizeNS;
+                    break;
+                case HitType.MidLeft:
+                case HitType.MidRight:
+                    desired_cursor = Cursors.SizeWE;
+                    break;
+                default:
+                    break;
+            }
+            // Display the desired cursor.
+            if (Cursor != desired_cursor) Cursor = desired_cursor;
+        }
         public ImageEx()
         {
-            _rect = new Rect(new Point(50, 50), new Size(80, 60));
+            _rect = new Rect(new Point(100, 100), new Size(120, 80));
             _rectTransform = _rect;
             _offsetRect = new Point(0, 0);
             _rectRotation = 0;
@@ -96,8 +210,9 @@ namespace WPFTest
                     + " , " + "Offset Y: " + _offsetRect.Y + "\n"
                     + "Width: " + _rect.Width
                     + " , " + "Height: " + _rect.Height;
-                FormattedText formattedText = new FormattedText(puttext, new System.Globalization.CultureInfo(10),
-                FlowDirection.LeftToRight, new Typeface("Angle Degree"), 12, Brushes.DarkRed, 3.25);
+
+                FormattedText formattedText = new FormattedText(puttext, new System.Globalization.CultureInfo(20),
+                FlowDirection.LeftToRight, new Typeface(new FontFamily("Calibri"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal), 12, Brushes.LimeGreen, 3.25);
                 dc.DrawText(formattedText, new Point(10, 10));
 
                 var mat = new Matrix();
@@ -107,17 +222,21 @@ namespace WPFTest
                 MatrixTransform matrixTransform = new MatrixTransform(mat);
                 dc.PushTransform(matrixTransform);
 
-                dc.PushOpacity(0.6);
+                dc.PushOpacity(0.65);
 
                 // All out gizmo rectangles are defined in Rectangle Space
                 var rectTopLeft = new Rect(_rect.Left - 5f, _rect.Top - 5f, 10f, 10f);
                 var rectTopRight = new Rect(_rect.Left + _rect.Width - 5f, _rect.Top - 5f, 10f, 10f);
                 var rectBottomLeft = new Rect(_rect.Left - 5f, _rect.Top + _rect.Height - 5f, 10f, 10f);
                 var rectBottomRight = new Rect(_rect.Left + _rect.Width - 5f, _rect.Top + _rect.Height - 5f, 10f, 10f);
+                var rectMidTop = new Rect(_rect.Left + _rect.Width / 2 - 5f, _rect.Top - 5f, 10f, 10f);
+                var rectMidBottom = new Rect(_rect.Left + _rect.Width / 2 - 5f, _rect.Top + _rect.Height - 5f, 10f, 10f);
+                var rectMidLeft = new Rect(_rect.Left - 5f, _rect.Top + _rect.Height / 2 - 5f, 10f, 10f);
+                var rectMidRight = new Rect(_rect.Left + _rect.Width - 5f, _rect.Top + _rect.Height / 2 - 5f, 10f, 10f);
                 var rectCenter = new Rect(_rect.Left + _rect.Width / 2 - 5f, _rect.Top + _rect.Height / 2 - 5f, 10f, 10f);
 
                 //3 point draw line and ellipse
-                Point pointLine1 = new Point(_rect.Left + _rect.Width / 2, _rect.Top);
+                Point pointLine1 = new Point(_rect.Left + _rect.Width / 2, _rect.Top - 5f);
                 Point pointLine2 = new Point(_rect.Left + _rect.Width / 2, _rect.Top - 30);
                 Point pointCenterEllipse = new Point(_rect.Left + _rect.Width / 2, _rect.Top - 30);
 
@@ -126,6 +245,10 @@ namespace WPFTest
                 dc.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Blue, 1), rectTopRight);
                 dc.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Blue, 1), rectBottomLeft);
                 dc.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Blue, 1), rectBottomRight);
+                dc.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Blue, 1), rectMidTop);
+                dc.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Blue, 1), rectMidBottom);
+                dc.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Blue, 1), rectMidLeft);
+                dc.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Blue, 1), rectMidRight);
                 dc.DrawRectangle(Brushes.WhiteSmoke, new Pen(Brushes.Black, 1), rectCenter);
 
                 dc.DrawLine(new Pen(Brushes.Red, 1), new Point(_centerPoint.X - 15d,
@@ -138,7 +261,7 @@ namespace WPFTest
                 dc.DrawLine(new Pen(Brushes.Black, 1.5), pointLine1, pointLine2);
 
                 //draw ellipse rotate
-                dc.DrawEllipse(Brushes.Blue, new Pen(Brushes.Black, 1.5), pointCenterEllipse, 7d, 7d);
+                dc.DrawEllipse(Brushes.Blue, new Pen(Brushes.Black, 1.5), pointCenterEllipse, 5d, 5d);
 
                 //calculate center point
                 _centerPoint = new Point(_rect.Left + _rect.Width / 2, _rect.Top + _rect.Height / 2);
