@@ -17,6 +17,7 @@ namespace WPFTest
         private Rect _rect;
         private Rect _rectTransform;
         private Point _centerPoint;
+        private Point _centerPointReal;
         private Point _offsetRect;
         private Single _rectRotation;
 
@@ -142,6 +143,7 @@ namespace WPFTest
             _offsetRect = new Point(0, 0);
             _rectRotation = 0;
             _centerPoint = new Point(_rect.Left + _rect.Width / 2, _rect.Top + _rect.Height / 2);
+            _centerPointReal = new Point(_centerPoint.X + _offsetRect.X, _centerPoint.Y + _offsetRect.Y);
         }
 
         public Point CenterPoint
@@ -149,7 +151,11 @@ namespace WPFTest
             get { return _centerPoint; }
             set { _centerPoint = value; }
         }
-
+        public Point CenterPointReal
+        {
+            get { return _centerPointReal; }
+            set { _centerPointReal = value; }
+        }
         public bool Drag
         {
             get { return _drag; }
@@ -209,7 +215,9 @@ namespace WPFTest
                 string puttext = "Angle: " + _rectRotation + "\n" + "Offset X: " + _offsetRect.X
                     + " , " + "Offset Y: " + _offsetRect.Y + "\n"
                     + "Width: " + _rect.Width
-                    + " , " + "Height: " + _rect.Height;
+                    + " , " + "Height: " + _rect.Height + "\n"
+                    + "Center Point: " + "X = " + _centerPoint.X + " , " + "Y = " + _centerPoint.Y + "\n"
+                    + "Center Point Real: " + "X = " + _centerPointReal.X + " , " + "Y = " + _centerPointReal.Y;
 
                 FormattedText formattedText = new FormattedText(puttext, new System.Globalization.CultureInfo(20),
                 FlowDirection.LeftToRight, new Typeface(new FontFamily("Calibri"), FontStyles.Normal, FontWeights.Bold, FontStretches.Normal), 12, Brushes.LimeGreen, 3.25);
@@ -265,6 +273,8 @@ namespace WPFTest
 
                 //calculate center point
                 _centerPoint = new Point(_rect.Left + _rect.Width / 2, _rect.Top + _rect.Height / 2);
+                _centerPointReal.X = _centerPoint.X + _offsetRect.X;
+                _centerPointReal.Y = _centerPoint.Y + _offsetRect.Y;
 
                 dc.Pop();
 
